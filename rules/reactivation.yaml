@@ -1,0 +1,39 @@
+title: Decommissioned Asset Reactivation
+id: ghostwatch-001
+status: stable
+description: >
+  Detects when an asset previously marked Decommissioned in the GhostWatch
+  lifecycle database reappears on the network (ARP, DHCP, or IP traffic
+  observed from its MAC address).
+logsource:
+  category: network_asset_lifecycle
+detection:
+  condition: asset.previous_state == "Decommissioned" AND asset.new_state == "Reactivated"
+level: critical
+tags:
+  - attack.defense_evasion
+  - attack.t1584   # Compromise Infrastructure (analogous: reuse of stale/forgotten assets)
+falsepositives:
+  - Asset re-issued to another department without updating GhostWatch's decommission record
+  - MAC address reused or spoofed by a new, legitimate device
+  - Lab/test environment reusing hardware without going through IT process
+---
+title: Sensitive Port Contacted by Stale Asset
+id: ghostwatch-002
+status: stable
+description: >
+  Detects an asset in Orphaned, Decommissioned, or Reactivated state
+  initiating a connection attempt to a sensitive port (SSH, RDP, SMB, etc).
+  An asset that should not be in active use has no legitimate reason to be
+  opening these services.
+logsource:
+  category: network_asset_lifecycle
+detection:
+  condition: event.type == "TCP_SYN" AND event.port in [22,23,3389,445,21,5900]
+             AND asset.state in ["Orphaned","Decommissioned","Reactivated"]
+level: high
+tags:
+  - attack.lateral_movement
+  - attack.t1021
+falsepositives:
+  - Maintenance/patching window against a staged-but-not-yet-decommissioned host

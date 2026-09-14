@@ -1,0 +1,17 @@
+# GhostWatch configuration
+# Note: thresholds below are shortened for demo/testing purposes.
+# In a real deployment, active_to_idle_seconds and idle_to_orphaned_seconds
+# would be measured in hours/days, not seconds.
+
+db_path: "data/ghostwatch.db"
+
+thresholds:
+  active_to_idle_seconds: 120      # no traffic for 2 min -> Idle
+  idle_to_orphaned_seconds: 300    # idle for 5 more min -> Orphaned
+
+sensitive_ports: [22, 23, 3389, 445, 21, 5900]
+
+# MACs considered "known/approved" assets. Anything NOT in this list
+# gets flagged as a low-severity "unknown asset first seen" alert
+# the first time it's observed (a lightweight Shadow-IT detector).
+approved_assets: []
